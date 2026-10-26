@@ -12,7 +12,7 @@ import {
 import { fetchCached } from "./store.mjs";
 
 let ort = null;
-const M = { det: null, id: null, lang: null, langMeta: null, provider: "wasm" };
+const M = { det: null, detCpu: null, id: null, lang: null, langMeta: null, provider: "wasm" };
 const IX = { keys: [], row: new Map(), nameId: null, scale: null, Q: null, dim: 512, n: 0 };
 let ready = null;
 
@@ -59,6 +59,9 @@ async function init({ version, ortVersion, sizes = {}, gpu }) {
     }
   }
   if (!M.det) [M.det, M.lang] = await Promise.all([session(det, "wasm"), session(lang, "wasm")]);
+  // the CPU detector for scan reads (see detect): the same session when there's no GPU
+  M.detCpu = M.provider === "webgpu" ? await session(det, "wasm") : M.det;
+  if (M.provider === "webgpu") M.langBytes = lang;   // kept to fall back to the CPU (languageProbs)
   M.langMeta = langMeta;
   IX.keys = embedMeta.keys;
   IX.row = new Map(IX.keys.map((k, i) => [k, i]));
@@ -159,8 +162,22 @@ async function detect(img, imgsz = 640, conf = 0.35, maxDet = 60, iou = 0.6) {
       x[o] = small.data[p] / 255; x[ph * pw + o] = small.data[p + 1] / 255; x[2 * ph * pw + o] = small.data[p + 2] / 255;
     }
   }
-  const out = await run(M.det, { [M.det.inputNames[0]]: new ort.Tensor("float32", x, [1, 3, ph, pw]) });
-  const t = out[M.det.outputNames[0]], A = t.dims[2], o = t.data;
+  // The GPU only finds cards at the live outline's size (640), the size gpuCheck verified. A
+  // scan read's 1280 run goes to the CPU: phone GPUs have far smaller buffer limits than a
+  // PC's, and there the big run failed or found nothing while the live outline kept working -
+  // "Card found", then every read of the scan failed and nothing was logged.
+  const det = imgsz <= 640 ? M.det : M.detCpu;
+  const feeds = { [det.inputNames[0]]: new ort.Tensor("float32", x, [1, 3, ph, pw]) };
+  let out;
+  try {
+    out = await run(det, feeds);
+  } catch (e) {
+    if (det === M.detCpu) throw e;
+    M.det = M.detCpu;              // the GPU failed on this device: the CPU from now on
+    M.gpuError = String(e && e.message || e);
+    out = await run(M.det, feeds);
+  }
+  const t = out[det.outputNames[0]], A = t.dims[2], o = t.data;
   const boxes = [], scores = [], idx = [];
   for (let a = 0; a < A; a++) {
     const sc = o[4 * A + a];
@@ -305,7 +322,17 @@ async function languageProbs(hires) {
   const small = hires.w === 2 * w && hires.h === 2 * h ? half(hires) : resize(hires, w, h, "a");
   const x = new Float32Array(3 * w * h);
   chw(small, x, 0);
-  const out = await run(M.lang, { [M.lang.inputNames[0]]: new ort.Tensor("float32", x, [1, 3, h, w]) });
+  const feeds = { [M.lang.inputNames[0]]: new ort.Tensor("float32", x, [1, 3, h, w]) };
+  let out;
+  try {
+    out = await run(M.lang, feeds);
+  } catch (e) {
+    if (M.provider !== "webgpu" || M.lang.__cpu) throw e;
+    M.lang = await ort.InferenceSession.create(new Uint8Array(M.langBytes), { executionProviders: ["wasm"] });   // GPU failed: CPU from now on
+    M.lang.__cpu = true;
+    M.gpuError = String(e && e.message || e);
+    out = await run(M.lang, feeds);
+  }
   const z = Array.from(out[M.lang.outputNames[0]].data), mx = Math.max(...z);
   const p = z.map((v) => Math.exp(v - mx)), sum = p.reduce((a, b) => a + b, 0);
   return Object.fromEntries(M.langMeta.labels.map((l, i) => [l, p[i] / sum]));

@@ -692,11 +692,32 @@
         if (!h) return json({ error: `no ${method} ${path} in the web version` }, 404);
         out = await h(url.searchParams, body, raw, ctype);
       }
+      if (path === "/api/identify") scanNote(out && out.ok === false ? out.error : null);
       return out instanceof Response ? out : json(out);
     } catch (e) {
+      if (path === "/api/identify") scanNote(String((e && e.message) || e));
       return json({ ok: false, error: String((e && e.message) || e) }, 500);
     }
   };
+  // A failed scan read says why for a few seconds. app.js puts it in the hud line, which the
+  // card-area outline check rewrites every 50 ms, so on a phone the reason was never seen.
+  let noteTimer = null;
+  function scanNote(msg) {
+    let el = document.getElementById("web-scan-note");
+    if (!msg) { if (el) el.remove(); return; }
+    const hud = document.getElementById("hud");
+    if (!hud || !hud.parentElement) return;
+    if (!el) {
+      el = document.createElement("div");
+      el.id = "web-scan-note";
+      el.className = "web-scan-note";
+      el.setAttribute("role", "status");
+      hud.parentElement.appendChild(el);
+    }
+    el.textContent = "Scan didn't work: " + msg;
+    clearTimeout(noteTimer);
+    noteTimer = setTimeout(() => el.remove(), 4000);
+  }
 
   // ---------------------------------------------------------------- first-run screen
   const boot = {
