@@ -1,0 +1,140 @@
+/* Web / phone version only (loaded after style.css). The desktop look stays; this adds the
+   first-run download screen, hides what a phone browser can't do, and stacks the Pokédex's
+   two halves into one column on narrow screens. */
+
+/* ---------------------------------------------------------------- first-run download */
+.web-boot { position: fixed; inset: 0; z-index: 60; display: grid; place-items: center; padding: 20px;
+  background: rgba(10,10,12,.72); pointer-events: auto; }
+.web-boot:not(.first) { background: none; pointer-events: none; place-items: start center; padding-top: calc(10px + env(safe-area-inset-top)); }
+.web-boot.mini { background: none; pointer-events: none; place-items: end center; padding-bottom: calc(14px + env(safe-area-inset-bottom)); }
+.web-boot.mini .wb-card > :not(.wb-bar):not(.wb-sub) { display: none; }
+.web-boot.mini .wb-card { width: min(320px, 90vw); padding: 10px 14px; gap: 8px; pointer-events: auto; }
+.wb-card { width: min(420px, 100%); display: grid; gap: 12px; padding: 20px; border-radius: 22px; background: var(--dex-red);
+  border: 4px solid var(--ink); box-shadow: inset -8px -8px 0 rgba(0,0,0,.14), 0 20px 60px rgba(0,0,0,.6); color: #fff; }
+.wb-card p { margin: 0; font-size: 14px; color: #ffe1e6; }
+.wb-card .wb-note { font-size: 12px; }
+.wb-card .wbtn { justify-self: start; }
+.wb-title { font-size: 13px; text-shadow: 3px 3px 0 var(--dex-red-dark); }
+.wb-bar { height: 16px; border-radius: 4px; background: #0a0f0a; border: 3px solid var(--ink); overflow: hidden; }
+.wb-bar i { display: block; height: 100%; width: 0; transition: width .3s;
+  background: repeating-linear-gradient(90deg, #3ccf7a 0 10px, #2fae66 10px 12px); }
+.wb-sub { font-size: 8px; color: #fff; }
+.wb-chip { padding: 8px 12px 7px; border-radius: 999px; background: rgba(17,17,20,.92); border: 2px solid var(--lens);
+  color: #d4f3ff; font-size: 8px; }
+
+/* ---------------------------------------------------------------- what the web version leaves out */
+.field:has(#s-detector) { display: none; }       /* no classic outline finder in the browser */
+#u-options { display: none; }                     /* retraining happens in the desktop app */
+html.no-share #btn-share, html.no-share #source, html.no-share #btn-reshare, html.no-share .desk-only { display: none !important; }
+html.touch #scan-key { visibility: hidden; }      /* keyboard hints */
+#web-install .wi-how { margin: 0 0 10px; font-size: 14px; }
+#web-install .wi-note { margin: 0 0 12px; font-size: 12px; }
+#web-install .check-row { margin-bottom: 10px; }
+
+/* ---------------------------------------------------------------- phones */
+@media (max-width: 700px) {
+  html, body { overscroll-behavior-y: none; }
+  .dex { padding: max(8px, env(safe-area-inset-top)) max(8px, env(safe-area-inset-right)) calc(16px + env(safe-area-inset-bottom)) max(8px, env(safe-area-inset-left)); gap: 10px; }
+  .dex-top { row-gap: 10px; }
+  .half-left, .half-right { flex-basis: 100%; border-radius: 20px; }
+  .half-left { padding: 0 10px 12px; }
+
+  /* lid: smaller lens, the name beside the lights */
+  .lid { height: 92px; margin: 0 -10px; }
+  .lid-edge { height: 92px; }
+  .lens { left: 12px; top: 8px; width: 68px; height: 68px; }
+  .leds { left: 92px; top: 12px; gap: 7px; }
+  .led { width: 15px; height: 15px; }
+  .brand-wrap { left: 92px; top: 52px; }
+  .brand { font-size: 13px; }
+  .gear-btn { right: 12px; top: 50px; width: 40px; height: 40px; }
+
+  /* the camera, upright like the card */
+  .bezel { padding: 18px 10px 10px; border-radius: 10px 10px 10px 28px; }
+  .video-wrap { aspect-ratio: 3 / 4; max-height: 64vh; max-height: 64dvh; margin: 0 auto; }
+  .video-empty p { font-size: 13px; }
+  .bezel-row { gap: 8px; margin-top: 10px; }
+  .bezel select { max-width: 150px; }
+  .grille { display: none; }
+  .sensor-bar { top: 8px; right: 8px; }
+  .sensor-btn { padding: 8px 12px; }
+  .hud { font-size: 12px; left: 8px; bottom: 8px; }
+
+  /* SCAN, the pills and the little screen in one row; the D-pad gives way to tapping */
+  .hw { gap: 12px; margin-top: 12px; flex-wrap: nowrap; }
+  .big-btn { width: 66px; height: 66px; flex: none; }
+  .hw-pills { gap: 8px; }
+  .pill-btn { min-width: 0; height: 34px; padding: 0 10px; font-size: 7px; }
+  .mini-lcd { min-width: 0; flex: 1 1 0; padding: 7px 8px; font-size: 7px; line-height: 1.9; }
+  .dpad-wrap { display: none; }
+  .tray { margin-top: 12px; padding: 8px 10px; gap: 10px; }
+  .switches { gap: 8px; margin-top: 12px; }
+  .rocker { min-height: 38px; padding: 0 12px; }
+  .seg.mode-seg button { height: 34px; }
+  .sw-note { flex-basis: 100%; }
+
+  /* the dex entry */
+  .half-right { padding: 54px 10px 12px; gap: 10px; }
+  .hit-light { right: 14px; top: 12px; }
+  .r-progress { flex-wrap: wrap; gap: 4px 10px; }
+  .r-progress .mini-bar { width: 100%; }
+  .half-right .screen-frame { min-height: 0; padding: 7px; }
+  .half-right .result-panel { max-height: none; padding: 12px; }
+  .result-top { gap: 12px; }
+  .card-img { width: 38%; }
+  .result-panel h1 { font-size: 13px; }
+  .result-panel .price { font-size: 16px; }
+  .facts { gap: 6px 10px; margin: 10px 0; }
+  .keys { gap: 7px; }
+  .key { height: 50px; font-size: 7px; padding: 0 2px; }
+  .white-row { gap: 8px; }
+  .wbtn { height: 42px; }
+  .white-row .spacer { display: none; }
+  .bscreen { flex: 1 1 0; min-width: 0; padding: 8px 8px; }
+  .bscreen b { font-size: 10px; }
+
+  /* the dex log: the columns that matter on a phone */
+  .dexlog { padding: 12px 10px 16px; border-radius: 8px 8px 20px 20px; }
+  .pulls-head { gap: 8px 12px; }
+  .price-box { padding: 10px 12px; }
+  .cost-label { width: 100%; }
+  .spent { flex: 1 1 100%; }
+  .spent .cost-label { flex: 1; }
+  #pulls { min-width: 0; font-size: 12px; }
+  #pulls th:nth-child(1), #pulls td:nth-child(1),
+  #pulls th:nth-child(4), #pulls td:nth-child(4),
+  #pulls th:nth-child(7), #pulls td:nth-child(7),
+  #pulls th:nth-child(8), #pulls td:nth-child(8),
+  #pulls th:nth-child(9), #pulls td:nth-child(9) { display: none; }
+  #pulls td.num { white-space: nowrap; }
+  .row-x { width: 36px; height: 36px; }
+  #pulls td, #pulls th { padding: 6px 5px; }
+  #pulls td img { height: 34px; }
+  #pulls td.no { font-size: 7px; }
+
+  /* pop-up windows fill the screen */
+  dialog, dialog.wide, #update { width: 100vw; max-width: 100vw; max-height: 100dvh; margin: 0; border-radius: 0 0 20px 20px; border-top: 0;
+    padding: calc(12px + env(safe-area-inset-top)) 12px calc(14px + env(safe-area-inset-bottom)); }
+  dialog[open] { gap: 10px; }
+  .dlg-head { gap: 10px; }
+  .dlg-head h2 { font-size: 11px; }
+  .lens-mini { width: 36px; height: 36px; }
+  .dscreen { padding: 12px; }
+  .settings-grid { gap: 10px; }
+  .h-sess > summary { flex-wrap: wrap; gap: 6px 10px; padding: 10px; }
+  .h-top { flex-basis: 100%; order: 9; }
+  .rc-card, .rc-card img { width: 120px; }
+  .rc-top { gap: 14px; }
+  .sensor-pop { width: min(330px, calc(100% - 16px)); }
+  .sensor-pop > img { width: 96px; }
+  .tally { width: min(260px, calc(100% - 16px)); }
+  .toast { bottom: calc(16px + env(safe-area-inset-bottom)); }
+}
+@media (max-width: 380px) {
+  .brand { font-size: 11px; }
+  .big-btn { width: 58px; height: 58px; }
+  .mini-lcd { font-size: 6px; padding: 6px; }
+}
+@media (max-width: 330px) { .mini-lcd { display: none; } }
+/* tray hint: tap on a phone, click or the D-pad with a mouse */
+html.touch .hint-mouse, html.mouse .hint-touch { display: none; }

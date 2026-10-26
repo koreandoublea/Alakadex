@@ -1,0 +1,584 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Alakadex</title>
+<link rel="icon" type="image/svg+xml" href="alakadex.svg">
+<link rel="icon" href="alakadex.ico" sizes="any">
+<link rel="preload" href="fonts/PressStart2P-Regular.ttf" as="font" type="font/ttf" crossorigin>
+<link rel="stylesheet" href="style.css">
+<link rel="stylesheet" href="web.css">
+<link rel="manifest" href="manifest.webmanifest">
+<meta name="theme-color" content="#c8102e">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<link rel="apple-touch-icon" href="icon-192.png">
+</head>
+<body>
+<svg width="0" height="0" style="position:absolute" aria-hidden="true">
+  <defs>
+    <symbol id="i-gear" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="6"/><circle cx="12" cy="12" r="2.2"/><path d="M12 2.5v3.2M12 18.3v3.2M2.5 12h3.2M18.3 12h3.2M5.3 5.3l2.3 2.3M16.4 16.4l2.3 2.3M5.3 18.7l2.3-2.3M16.4 7.6l2.3-2.3"/></g></symbol>
+    <symbol id="i-trash" viewBox="0 0 16 16"><path d="M2.5 4h11M6 4V2.5h4V4M4 4l.7 9.5h6.6L12 4M6.7 6.5v4.5M9.3 6.5v4.5" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></symbol>
+    <symbol id="i-lens" viewBox="0 0 100 100">
+      <circle cx="50" cy="50" r="46" fill="#f4f4f4" stroke="#1a1a1a" stroke-width="6"/>
+      <circle cx="50" cy="50" r="34" fill="#0a3a6b"/>
+      <circle cx="50" cy="50" r="30" fill="#2f95e6"/>
+      <circle cx="44" cy="44" r="18" fill="#62c2f7" opacity=".55"/>
+      <ellipse cx="39" cy="36" rx="10" ry="6" transform="rotate(-35 39 36)" fill="#ffffff" opacity=".9"/>
+    </symbol>
+    <symbol id="i-lens-gold" viewBox="0 0 100 100">
+      <circle cx="50" cy="50" r="46" fill="#f4f4f4" stroke="#1a1a1a" stroke-width="6"/>
+      <circle cx="50" cy="50" r="34" fill="#5a3b00"/>
+      <circle cx="50" cy="50" r="30" fill="#f2b100"/>
+      <circle cx="44" cy="44" r="18" fill="#ffe066" opacity=".7"/>
+      <path d="M50 36 L54 46 L64 50 L54 54 L50 64 L46 54 L36 50 L46 46 Z" fill="#ffffff"/>
+    </symbol>
+  </defs>
+</svg>
+
+<main class="dex">
+<div class="dex-top">
+
+  <!-- ============ LEFT HALF: the scanner ============ -->
+  <section class="half half-left" aria-label="Scanner">
+    <div class="lid">
+      <svg class="lid-edge" aria-hidden="true" width="100%" height="106">
+        <polygon points="0,0 4000,0 4000,52 330,52 290,98 0,98" fill="#dc2442"/>
+        <polyline points="0,98 290,98 330,52 4000,52" fill="none" stroke="#1a1a1a" stroke-width="4" stroke-linejoin="round"/>
+      </svg>
+      <div class="lens s-off" id="lens" role="img" aria-label="Scanner status: camera off">
+        <svg viewBox="0 0 100 100" aria-hidden="true">
+          <defs>
+            <radialGradient id="lensGlass" cx="36%" cy="32%" r="72%">
+              <stop offset="0" class="g0"/><stop offset=".38" class="g1"/><stop offset=".78" class="g2"/><stop offset="1" class="g3"/>
+            </radialGradient>
+            <clipPath id="lensClip"><circle cx="50" cy="50" r="33"/></clipPath>
+          </defs>
+          <circle cx="50" cy="50" r="47" class="ring"/>
+          <circle cx="50" cy="50" r="36.5" class="rim"/>
+          <circle cx="50" cy="50" r="33" fill="url(#lensGlass)"/>
+          <g clip-path="url(#lensClip)" class="ov ov-scan"><rect x="10" y="20" width="80" height="3" class="scanline"/></g>
+          <path class="ov ov-check" d="M37 51 L46 60 L64 41"/>
+          <path class="ov ov-star" d="M50 36 L54 46 L64 50 L54 54 L50 64 L46 54 L36 50 L46 46 Z"/>
+          <g class="ov ov-pause"><rect x="39" y="38" width="8" height="24" rx="2"/><rect x="53" y="38" width="8" height="24" rx="2"/></g>
+          <path class="ov ov-frozen" d="M50 30 v40 M32.7 40 l34.6 20 M32.7 60 l34.6 -20"/>
+          <ellipse cx="38" cy="35" rx="11" ry="6.5" transform="rotate(-35 38 35)" class="glint"/>
+          <circle cx="64" cy="66" r="3.6" class="glint2"/>
+        </svg>
+      </div>
+      <div class="leds" aria-hidden="true">
+        <span class="led led-r" id="led-cam" title="Camera or screen live"></span>
+        <span class="led led-y" id="led-read" title="Reading a card"></span>
+        <span class="led led-g" id="led-log" title="Card logged"></span>
+      </div>
+      <div class="brand-wrap">
+        <div class="brand">Alakadex</div>
+        <div class="credit">Created by Koreandoublea</div>
+      </div>
+      <button class="gear-btn" id="btn-settings" title="Settings and card database" aria-label="Settings">
+        <svg width="20" height="20" aria-hidden="true"><use href="#i-gear"/></svg><i class="dot hidden" id="settings-dot"></i>
+      </button>
+    </div>
+
+    <div class="bezel">
+      <span class="bezel-dots" aria-hidden="true"></span>
+      <div class="video-wrap" id="video-wrap">
+        <video id="video" autoplay playsinline muted></video>
+        <canvas id="frozen" class="hidden"></canvas>
+        <canvas id="overlay"></canvas>
+        <div class="video-empty" id="video-empty">
+          <p>Point your camera at one card at a time, on a plain surface.<br><span class="desk-only">Or share a screen / browser tab to hover cards in a video or stream.</span></p>
+          <div class="start-row">
+            <button class="btn primary" id="btn-start">Start camera</button>
+            <button class="btn" id="btn-share">Share a screen / tab</button>
+          </div>
+        </div>
+        <div class="frozen-tag px hidden" id="frozen-tag">❚❚ FROZEN</div>
+        <div class="scan-flash" id="scan-flash"></div>
+        <div class="pull-banner hidden" id="pull-banner" role="status" aria-live="polite">
+          <span class="nb-badge" id="nb-badge">NEW!</span>
+          <div class="nb-text"><strong id="nb-title"></strong><span id="nb-sub"></span></div>
+          <button type="button" class="nb-x" id="nb-x" aria-label="Dismiss">×</button>
+        </div>
+        <div class="celebrate hidden" id="celebrate" role="status" aria-live="polite" title="Click to dismiss (Esc)">
+          <div class="cb-rays"></div>
+          <div class="cb-confetti" id="cb-confetti"></div>
+          <div class="cb-stack">
+            <div class="cb-head" id="cb-head"></div>
+            <div class="cb-card"><img id="cb-img" alt=""><span class="cb-shine"></span><span class="cb-new hidden" id="cb-new">NEW</span></div>
+            <div class="cb-price" id="cb-price"></div>
+            <div class="cb-sub" id="cb-sub"></div>
+          </div>
+          <div class="cb-hint">Click or Esc to dismiss</div>
+        </div>
+        <div class="hud" id="hud">No camera</div>
+        <div class="sensor-bar hidden" id="sensor-bar">
+          <button class="sensor-btn" id="btn-freeze" title="Freeze the frame so you can hover cards at leisure (F)">❚❚ Freeze</button>
+          <button class="sensor-btn" id="btn-scanframe" title="Identify every card in view and total their value (K)">▦ Scan frame</button>
+          <button class="sensor-btn" id="btn-sensor" title="Sensor: hover any card to identify it (Alt+Shift+L)">
+            <span class="dot"></span>Sensor
+          </button>
+          <button class="sensor-btn icon" id="btn-sensor-opts" title="Sensor options" aria-label="Sensor options">⚙</button>
+          <div class="sensor-opts hidden" id="sensor-opts">
+            <label><input type="checkbox" id="so-outlines"> Outline every card in view</label>
+            <label><input type="checkbox" id="so-highlight"> Highlight the hovered card</label>
+            <label><input type="checkbox" id="so-tourney"> Show tournament use</label>
+            <label><input type="checkbox" id="so-pause"> Freeze when a popup is pinned</label>
+            <label>Card image <select id="so-size"><option value="s">Small</option><option value="m">Medium</option><option value="l">Large</option></select></label>
+            <label>Hit alert at <span class="money-in">$<input type="number" id="so-hit" min="0" step="1"></span></label>
+          </div>
+        </div>
+        <div class="sensor-pop hidden" id="sensor-pop">
+          <img id="sp-img" alt="">
+          <div class="sp-body">
+            <div class="sp-hit hidden" id="sp-hit">★ Hit</div>
+            <div class="sp-name" id="sp-name"></div>
+            <div class="sp-set"><img id="sp-set-icon" alt=""><span id="sp-set"></span></div>
+            <div class="sp-date" id="sp-date"></div>
+            <div class="sp-row"><span class="rarity" id="sp-rarity"></span><span class="sp-price" id="sp-price"></span></div>
+            <div class="sp-printings" id="sp-printings"></div>
+            <div class="sp-legal" id="sp-legal"></div>
+            <div class="sp-tourney" id="sp-tourney"></div>
+            <div class="sp-note" id="sp-note"></div>
+            <div class="sp-actions">
+              <button class="btn small" id="sp-more">Details</button>
+              <a class="btn small" id="sp-tcgp" target="_blank" rel="noopener" title="Open on TCGplayer">TCGplayer ↗</a>
+              <button class="btn small ghost" id="sp-add">+ Add to pulls</button>
+            </div>
+            <div class="sp-pin" id="sp-pin">Click the card to pin</div>
+          </div>
+        </div>
+        <div class="tally hidden" id="tally">
+          <div class="tally-head">
+            <div><strong id="tally-total">$0.00</strong> <span class="muted" id="tally-meta"></span></div>
+            <button class="btn small primary" id="tally-add">+ Add all</button>
+            <button class="btn small ghost" id="tally-close" title="Close and unfreeze (Esc)" aria-label="Close and unfreeze">×</button>
+          </div>
+          <div class="tally-list" id="tally-list"></div>
+        </div>
+      </div>
+      <div class="bezel-row">
+        <div class="power">
+          <button class="power-btn" id="btn-power" aria-label="Start the camera" title="Start or stop the camera or screen share"></button>
+          <span class="px">ON/OFF</span>
+        </div>
+        <div class="seg src-seg" id="source" role="group" aria-label="What to scan">
+          <button type="button" data-src="camera" class="on">CAMERA</button>
+          <button type="button" data-src="screen">SCREEN</button>
+        </div>
+        <select id="camera-select" title="Camera"></select>
+        <button class="btn small light" id="btn-reshare" hidden>Pick another window or tab</button>
+        <span class="spacer"></span>
+        <span class="grille" aria-hidden="true"><i></i><i></i><i></i><i></i></span>
+      </div>
+    </div>
+
+    <div class="hw">
+      <div class="hw-a">
+        <button class="big-btn" id="btn-scan" title="Scan now (Space)"><span id="scan-label">SCAN</span></button>
+        <span class="hw-cap" id="scan-key">SPACE</span>
+      </div>
+      <div class="hw-pills">
+        <button class="pill-btn red" id="btn-pause" title="Pause scanning: nothing is scanned or logged until you resume (P)">PAUSE  P</button>
+        <button class="pill-btn red" id="btn-hw-freeze" title="Freeze the frame (F)" hidden>FREEZE  F</button>
+        <button class="pill-btn blue" id="btn-hw-sensor" title="Look up cards without logging them (Alt+Shift+L)">SENSOR</button>
+      </div>
+      <div class="mini-lcd" id="lcd" aria-live="polite"><div id="lcd-1">NO CAMERA</div><div id="lcd-2">PRESS ON/OFF</div><div id="lcd-3"></div></div>
+      <div class="dpad-wrap">
+        <div class="dpad" role="group" aria-label="D-pad">
+          <button class="dp-up" id="dp-up" aria-label="Scroll the dex entry up"><i></i></button>
+          <button class="dp-left" id="dp-left" aria-label="Previous candidate (Left arrow)"><i></i></button>
+          <span class="dp-mid"></span>
+          <button class="dp-right" id="dp-right" aria-label="Next candidate (Right arrow)"><i></i></button>
+          <button class="dp-down" id="dp-down" aria-label="Scroll the dex entry down"><i></i></button>
+        </div>
+        <span class="hw-cap">CANDIDATES</span>
+      </div>
+    </div>
+
+    <div class="tray">
+      <div class="seen-crop"><img id="crop" alt=""><span class="px">SCANNER</span></div>
+      <i class="tray-div" aria-hidden="true"></i>
+      <div class="seen-cands">
+        <div class="label"><span class="px">OTHER CANDIDATES</span><span class="hint-mouse"> click, or flip with the D-pad</span><span class="hint-touch"> tap one to correct the scan</span></div>
+        <div id="cands" class="cands"></div>
+      </div>
+    </div>
+
+    <div class="switches">
+      <div class="seg mode-seg" id="mode" role="group" aria-label="Mode">
+        <button type="button" data-mode="pulls" class="on" title="Log the cards you pull">PULLS</button>
+        <button type="button" data-mode="lookup" title="Look up cards without logging them: hover, freeze, scan a whole frame">LOOK UP</button>
+      </div>
+      <div class="sw-group pulls-only">
+        <label class="rocker"><input type="checkbox" id="auto-scan" checked><i class="sw-led"></i>Auto-scan</label>
+        <label class="rocker" title="Only the area inside the box is used to identify the card"><input type="checkbox" id="guide-mode" checked><i class="sw-led"></i>Card area</label>
+        <label class="rocker" title="Draw the live outline around the detected card"><input type="checkbox" id="show-outline" checked><i class="sw-led"></i>Card outline</label>
+        <button class="rocker" id="btn-reset-box" title="Put the scan area back to a card-sized box in the centre">Reset area</button>
+      </div>
+      <div class="sw-group lookup-only">
+        <button class="rocker" data-so="outlines" aria-pressed="true"><i class="sw-led"></i>Outline every card</button>
+        <button class="rocker" data-so="highlight" aria-pressed="true"><i class="sw-led"></i>Highlight hovered</button>
+        <button class="rocker" data-so="pause" aria-pressed="true"><i class="sw-led"></i>Freeze when pinned</button>
+      </div>
+      <label class="rocker lang-select" title="Which language your cards are printed in. Auto reads it from each card; pick one if Auto gets it wrong for a stack of cards.">Language
+        <select id="card-lang">
+          <option value="auto">Auto</option>
+          <option value="en">English</option>
+          <option value="ja">Japanese</option>
+          <option value="ko">Korean</option>
+          <option value="zh-tw">Chinese</option>
+        </select></label>
+      <span class="sw-note lookup-only" id="lookup-note">Auto-scan and the card area wait while you look. Back to PULLS picks up where you left off.</span>
+    </div>
+  </section>
+
+  <div class="hinge" aria-hidden="true"><i></i><i></i></div>
+
+  <!-- ============ RIGHT HALF: the dex entry ============ -->
+  <section class="half half-right" aria-label="Dex entry">
+    <svg class="notch" aria-hidden="true" width="276" height="62">
+      <polygon points="0,0 276,0 232,56 0,56" fill="#121214"/>
+      <polyline points="0,56 232,56 274,2" fill="none" stroke="#1a1a1a" stroke-width="4" stroke-linejoin="round"/>
+    </svg>
+    <div class="hit-light" id="hit-light" title="Lights up for a hit"><span class="px">HIT</span><i></i></div>
+
+    <div class="screen-frame">
+      <section class="result-panel" id="result" tabindex="-1">
+        <div class="placeholder" id="result-empty">
+          <div class="placeholder-card"></div>
+          <p>Scan a card to see its set, number, rarity, TCGplayer market price and tournament use.</p>
+        </div>
+        <div class="result-body hidden" id="result-body">
+          <div class="r-strip hidden" id="r-strip"></div>
+          <div class="confirm-box hidden" id="confirm-box">
+            <div class="confirm-head"><span class="px" id="confirm-title">WHICH CARD IS THIS?</span><span class="px" id="confirm-pct"></span></div>
+            <p class="confirm-help">Scanning is paused until you choose. Pick the right card, then <b>LOG IT</b>, or <b>SKIP</b> if it isn't one. ◀ ▶ flips through them.</p>
+            <div class="cands" id="confirm-cands"></div>
+            <div class="confirm-actions">
+              <button class="btn small" id="confirm-none">None of these: skip this card</button>
+              <button class="link-btn" id="confirm-search">Not listed? Search the database</button>
+            </div>
+          </div>
+          <div class="result-top">
+            <img id="r-img" class="card-img" alt="">
+            <div class="r-main">
+              <div class="r-method" id="r-method"></div>
+              <h1><span id="r-name"></span> <span id="r-lang" class="lang-pill hidden"></span></h1>
+              <div id="r-local" class="r-local hidden"></div>
+              <div class="r-set"><img id="r-set-icon" alt=""><span id="r-set"></span><span class="r-date" id="r-date"></span></div>
+              <div class="r-progress hidden" id="r-progress" title="Open this set's checklist">
+                <div class="mini-bar"><div id="r-prog-fill"></div></div>
+                <span id="r-prog-text"></span>
+                <span class="new-tag hidden" id="r-new">+1 new</span>
+              </div>
+              <div class="facts">
+                <div><span class="k">Number</span><span class="v" id="r-number"></span></div>
+                <div><span class="k">Rarity</span><span class="v"><span class="rarity" id="r-rarity"></span></span></div>
+                <div><span class="k">Era</span><span class="v" id="r-era"></span></div>
+                <div><span class="k">Reg. mark</span><span class="v" id="r-reg"></span></div>
+              </div>
+              <div class="r-pricebox">
+                <div class="price-label" id="r-price-label">TCGplayer market price</div>
+                <div class="price" id="r-price">—</div>
+                <div class="printings" id="r-printings"></div>
+                <a id="r-tcgp" class="link" target="_blank" rel="noopener">View on TCGplayer ↗</a>
+              </div>
+            </div>
+          </div>
+          <div class="conf-row">
+            <div class="conf-bar"><div id="r-conf-fill"></div></div>
+            <span id="r-conf-text"></span>
+          </div>
+          <div class="notice hidden" id="r-notice"></div>
+          <div class="r-langs hidden" id="r-langs" title="The same card printed in other languages: click to switch"></div>
+          <div class="tourney">
+            <h2>TOURNAMENT USE <span class="src-tag">LIMITLESS</span></h2>
+            <div id="r-tourney" class="muted">Loading…</div>
+          </div>
+          <div class="legal" id="r-legal"></div>
+        </div>
+      </section>
+    </div>
+
+    <div class="keys">
+      <button class="key" id="btn-history" title="Pull logs from earlier sessions">HISTORY</button>
+      <button class="key" id="btn-sets" title="How much of each set you've collected">SETS</button>
+      <button class="key" id="btn-recap" title="Highest-value pulls this session">RECAP</button>
+      <button class="key" id="btn-export" title="Save this session's pulls as a CSV file">EXPORT</button>
+      <button class="key" id="btn-refresh-prices" title="Get today's TCGplayer prices for every pull this session">PRICES</button>
+      <button class="key" id="btn-key-update" title="Update cards: get new sets">UPDATE<i class="dot hidden" id="key-update-dot"></i></button>
+      <button class="key" id="btn-alerts" title="Pull alert settings: new-card banner, hit celebration, sound">ALERTS</button>
+      <button class="key amber" id="btn-wrong" title="Fix the last scan: pick the right card or search the database">WRONG CARD</button>
+    </div>
+
+    <div class="white-row">
+      <button class="wbtn" id="btn-w1" title="Count another copy of this card">+1 COPY</button>
+      <button class="wbtn" id="btn-w2" title="Take the card you just logged back out of the log">UNDO</button>
+      <span class="spacer"></span>
+      <div class="bscreen"><span class="px">SESSION</span><b class="px gold" id="bs-total">$0.00</b></div>
+      <div class="bscreen"><span class="px">PULLS</span><b class="px" id="bs-count">0</b><em class="px" id="bs-new"></em></div>
+    </div>
+  </section>
+</div>
+
+<!-- ============ DEX LOG ============ -->
+<section class="dexlog pulls-panel" aria-label="Pulls this session">
+  <div class="pulls-head">
+    <h2>DEX LOG <span class="muted" id="pulls-count"></span></h2>
+    <span class="session-when" id="session-when"></span>
+    <span class="spacer"></span>
+    <div class="pulls-total">TOTAL <strong id="pulls-total">$0.00</strong> <span class="chg" id="pulls-delta"></span></div>
+    <button class="btn small ghost-light" id="btn-clear" title="Delete this session's pull log">Delete session</button>
+  </div>
+  <div class="price-note hidden" id="price-note"></div>
+  <div class="price-box" id="price-box">
+    <div class="pb-controls">
+      <span class="pb-label">WHAT YOU PAID</span>
+      <div class="seg" id="cost-mode" title="Enter one price for the whole session, or a price for each set">
+        <button type="button" data-mode="total">One total</button>
+        <button type="button" data-mode="set">Per set</button>
+      </div>
+      <label class="spent" id="total-cost-wrap" title="What you paid for this session's packs">Spent
+        <span class="money-in">$<input type="number" id="session-cost" min="0" step="0.01" placeholder="0.00"></span></label>
+      <label class="spent">On <input type="text" class="cost-label" id="session-cost-label" maxlength="80" placeholder="Booster bundle" title="What you bought (optional)"></label>
+      <span class="muted pb-hint" id="pb-hint"></span>
+    </div>
+    <div class="set-rows hidden" id="set-rows"></div>
+    <div class="value-row hidden" id="value-row">
+      <div class="vr-stat"><span id="vr-value-label">Pulled value</span><strong id="vr-value">$0.00</strong></div>
+      <div class="vr-stat"><span>vs. spent</span><strong id="vr-diff"></strong></div>
+      <div class="vr-chart">
+        <div class="vr-bar"><div id="vr-fill"></div><div id="vr-mark"></div></div>
+        <div class="vr-scale"><span>$0</span><span id="vr-break"></span><span id="vr-max"></span></div>
+      </div>
+    </div>
+  </div>
+  <div class="table-wrap">
+    <table id="pulls">
+      <thead><tr><th class="cur"></th><th>No.</th><th></th><th>Time</th><th>Card</th><th>Set</th><th>Number</th><th>Rarity</th><th>Decklists</th><th class="num">Market</th><th class="num chg-col">Change</th><th></th></tr></thead>
+      <tbody></tbody>
+    </table>
+  </div>
+</section>
+</main>
+
+<!-- ============ SETTINGS ============ -->
+<dialog id="settings" class="dex-dlg wide">
+  <div class="dlg-head">
+    <svg class="lens-mini" aria-hidden="true"><use href="#i-lens"/></svg>
+    <h2>SETTINGS</h2>
+    <small class="dlg-sub s-saved" id="s-saved">Changes are saved automatically.</small>
+    <span class="spacer"></span>
+    <button type="button" class="wbtn" id="s-close">CLOSE</button>
+  </div>
+  <div class="settings-grid">
+    <div class="settings-col">
+      <div class="dscreen db-box">
+        <h3>CARD DATABASE</h3>
+        <div class="db-row">
+          <div class="db-info">
+            <span class="pill" id="pill-index">Index: loading…</span>
+            <small class="muted" id="db-built"></small>
+          </div>
+          <button type="button" class="wbtn" id="btn-update" title="Update cards: get new sets">UPDATE CARDS<i class="dot hidden" id="update-dot"></i></button>
+        </div>
+      </div>
+      <div class="dscreen alert-box" id="alert-box">
+        <h3 class="gold">PULL ALERTS</h3>
+        <label class="check-row"><input type="checkbox" id="s-newbanner">
+          <span><span>Banner for cards new to your dex</span><small>The first time a card shows up in any of your sessions.</small></span></label>
+        <div class="check-row">
+          <span><label for="s-hit">Celebrate pulls worth at least</label>
+            <span class="money-in">$<input type="number" id="s-hit" min="0" step="1"></span>
+            <small>Same value as the Sensor's Hit alert. 0 turns the price alert off.</small></span>
+        </div>
+        <label class="check-row"><input type="checkbox" id="s-hitrarity">
+          <span><span>Also celebrate top rarities under that price</span><small>Special Illustration Rare, Hyper Rare, gold and similar.</small></span></label>
+        <div class="check-row"><span class="inline">Celebration
+          <span class="seg" id="s-celebration">
+            <button type="button" data-mode="full">Full screen</button>
+            <button type="button" data-mode="banner">Banner only</button>
+          </span></span></div>
+        <label class="check-row"><input type="checkbox" id="s-sound"><span>Play a sound</span></label>
+      </div>
+      <div class="dscreen">
+        <h3>PRICES</h3>
+        <label class="check-row refresh-row"><input type="checkbox" id="s-refreshopen">
+          <span><span>Refresh prices when Alakadex opens</span><small>Gets today's prices for your last session's pulls in the background.</small></span></label>
+      </div>
+    </div>
+    <div class="settings-col">
+      <div class="dscreen">
+        <h3>SCANNER</h3>
+        <label class="field">
+          <span>Card finder</span>
+          <select id="s-detector">
+            <option value="auto">Trained model — finds cards in hands, sleeves, streams (default)</option>
+            <option value="classic">Classic — outline finder, needs a plain dark background</option>
+          </select>
+          <small id="s-detector-status"></small>
+        </label>
+        <label class="field">
+          <span>Auto-scan speed <output class="rate-out" id="s-rate-out">5 scans/s</output></span>
+          <input type="range" id="s-rate" min="1" max="10" step="1" value="5">
+          <small>How often auto-scan checks the camera for a held-still card. Faster picks up cards sooner when you flip through a stack; slower uses less CPU.</small>
+        </label>
+        <label class="field">
+          <span>Same-card memory <output class="rate-out" id="s-memory-out">10 sec</output></span>
+          <input type="range" id="s-memory" min="0" max="60" step="1" value="10">
+          <small>If the card you just scanned comes back within this time, it's treated as the same copy and isn't counted again. Press +1 COPY or Space to count another copy anyway. 0 turns this off.</small>
+        </label>
+        <label class="field">
+          <span>Confirm scans <output class="rate-out" id="s-confirm-out">2 in a row</output></span>
+          <input type="range" id="s-confirm" min="1" max="10" step="1" value="2">
+          <small>A card is logged as pulled only after this many reads in a row identify it the same way. 1 logs it on the first read.</small>
+        </label>
+        <label class="field">
+          <span>Minimum confidence <output class="rate-out" id="s-minconf-out">50%</output></span>
+          <input type="range" id="s-minconf" min="0" max="100" step="5" value="50">
+          <small>Cards are logged only at this confidence or higher. A read below it pauses scanning until you pick the right card (LOG IT / SKIP).</small>
+        </label>
+      </div>
+      <div class="dialog-actions start">
+        <button type="button" class="wbtn ghost" id="s-reset" title="Put every setting on this page back to its default">RESET TO DEFAULTS</button>
+      </div>
+    </div>
+  </div>
+</dialog>
+
+<!-- ============ UPDATE CARDS ============ -->
+<dialog id="update" class="dex-dlg">
+  <div class="dlg-head">
+    <svg class="lens-mini" aria-hidden="true"><use href="#i-lens"/></svg>
+    <h2>UPDATE CARDS</h2>
+    <span class="spacer"></span>
+    <button type="button" class="wbtn" id="u-close">CLOSE</button>
+  </div>
+  <div class="dscreen">
+    <p id="u-summary" class="muted">Checking for new sets…</p>
+    <div id="u-options">
+      <label class="check-row"><input type="checkbox" id="u-full"><span><span>Re-read every set</span><small>Also refreshes prices; slower.</small></span></label>
+      <label class="check-row"><input type="checkbox" id="u-retrain"><span><span>Also retrain the identifier model (about an hour)</span><small id="u-retrain-note">New sets are recognised without retraining. Retraining can help after several new sets.</small></span></label>
+    </div>
+    <div id="u-progress" class="hidden">
+      <div class="conf-bar"><div id="u-bar"></div></div>
+      <div id="u-label" class="u-label"></div>
+      <pre id="u-log" class="u-log"></pre>
+    </div>
+  </div>
+  <div class="dialog-actions">
+    <button class="wbtn" id="u-cancel" hidden>CANCEL</button>
+    <button class="wbtn gold" id="u-start">UPDATE NOW</button>
+  </div>
+</dialog>
+
+<!-- ============ HISTORY ============ -->
+<dialog id="history" class="dex-dlg wide">
+  <div class="dlg-head">
+    <svg class="lens-mini" aria-hidden="true"><use href="#i-lens"/></svg>
+    <h2>PULL HISTORY</h2>
+    <small class="dlg-sub">A new log starts every time Alakadex opens.</small>
+    <span class="spacer"></span>
+    <label class="rocker">Sort
+      <select id="h-sort" title="Order sessions and pulls by date and time">
+        <option value="new">Newest first</option>
+        <option value="old">Oldest first</option>
+      </select></label>
+    <button type="button" class="wbtn" id="h-close">CLOSE</button>
+  </div>
+  <div class="dscreen h-screen"><div id="h-list" class="h-list"></div></div>
+</dialog>
+
+<!-- ============ SETS ============ -->
+<dialog id="sets" class="dex-dlg wide">
+  <div class="dlg-head">
+    <svg class="lens-mini" aria-hidden="true"><use href="#i-lens"/></svg>
+    <h2>SET PROGRESS</h2>
+    <span class="spacer"></span>
+    <div class="seg dark-seg" id="sets-mode" title="Which pulls count">
+      <button type="button" data-mode="all">All sessions</button>
+      <button type="button" data-mode="session">This session</button>
+    </div>
+    <label class="rocker">Sort
+      <select id="sets-sort" title="Order the sets">
+        <option value="complete">Most complete</option>
+        <option value="recent">Most recent pull</option>
+        <option value="release">Release date</option>
+      </select></label>
+    <button type="button" class="wbtn" id="sets-close">CLOSE</button>
+  </div>
+  <div class="sets-body">
+    <div class="sets-frame"><div class="sets-list" id="sets-list"></div></div>
+    <div class="dscreen set-detail" id="set-detail"></div>
+  </div>
+</dialog>
+
+<!-- ============ RECAP ============ -->
+<dialog id="recap" class="dex-dlg wide">
+  <div class="dlg-head">
+    <svg class="lens-mini glow-gold" aria-hidden="true"><use href="#i-lens-gold"/></svg>
+    <div class="dlg-titles">
+      <h2 id="rc-title">SESSION RECAP</h2>
+      <p class="dlg-sub" id="rc-meta"></p>
+    </div>
+    <span class="spacer"></span>
+    <button type="button" class="wbtn" id="rc-back">CLOSE</button>
+  </div>
+  <div class="rc-stats" id="rc-stats"></div>
+  <div class="rc-sets hidden" id="rc-sets"></div>
+  <div class="dscreen rc-hall">
+    <div class="rc-hall-head"><h3 class="gold">HALL OF FAME</h3><span>top 5 pulls by market price</span></div>
+    <div class="rc-dir" aria-hidden="true"><span class="gold">HIGHEST</span><i></i><span>LOWER ▶</span></div>
+    <div id="rc-top" class="rc-top"></div>
+  </div>
+  <div class="dialog-actions">
+    <button class="wbtn" id="rc-save-img" title="Save a picture of your top pulls (PNG)">SAVE IMAGE</button>
+    <button class="wbtn" id="rc-save-txt" title="Save a text summary of the session">SAVE SUMMARY</button>
+    <span class="spacer"></span>
+    <button class="wbtn dark hidden" id="rc-quit">CLOSE ALAKADEX</button>
+  </div>
+</dialog>
+
+<!-- ============ WRONG CARD ============ -->
+<dialog id="wrong" class="dex-dlg">
+  <div class="dlg-head">
+    <svg class="lens-mini" aria-hidden="true"><use href="#i-lens"/></svg>
+    <h2 id="w-title">WRONG CARD?</h2>
+    <span class="spacer"></span>
+    <button type="button" class="wbtn" id="w-close">CLOSE</button>
+  </div>
+  <div class="lcd-screen w-body">
+    <div class="w-strip px" id="w-strip">FIX THE LAST SCAN</div>
+    <p class="w-empty hidden" id="w-empty">Nothing is logged yet, so there's nothing to fix. Scan a card first.</p>
+    <div class="w-main" id="w-main">
+      <div class="w-logged">
+        <img id="w-img" alt="">
+        <div>
+          <div class="k" id="w-k">Logged as</div>
+          <div class="w-name" id="w-name"></div>
+          <div class="w-meta" id="w-meta"></div>
+        </div>
+      </div>
+      <div class="w-sec"><h3>LOOK-ALIKES</h3><span>what the scanner almost picked</span></div>
+      <div class="cands" id="w-cands"></div>
+      <div class="w-sec"><h3>NOT THERE? SEARCH</h3><span>name, set or number</span></div>
+      <input id="search" type="search" placeholder="e.g. charizard ex obf, or pikachu 151" aria-label="Search the card database">
+      <div id="search-results" class="cands wrap"></div>
+      <div class="w-note" id="w-note"></div>
+    </div>
+  </div>
+  <div class="dialog-actions">
+    <span class="spacer"></span>
+    <button class="wbtn danger" id="w-remove">NOT A CARD: REMOVE</button>
+  </div>
+</dialog>
+
+<div class="toast hidden" id="toast"></div>
+
+<script src="shim.js"></script>
+<script src="app.js"></script>
+</body>
+</html>
