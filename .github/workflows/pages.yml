@@ -1,0 +1,46 @@
+# Publishes this folder as the Alakadex web app on GitHub Pages, and refreshes the card prices
+# every night (tools/prices.py reads TCGplayer). Free on a public repository.
+# One-time setup: repository Settings > Pages > Source: "GitHub Actions".
+name: Publish Alakadex
+
+on:
+  push:
+    branches: [main]
+  schedule:
+    - cron: "17 9 * * *"        # every day, 09:17 UTC
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: pages
+  cancel-in-progress: false
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - uses: actions/checkout@v4
+      - id: pages
+        uses: actions/configure-pages@v5
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Keep the prices that are live now (in case tonight's read fails)
+        run: curl -fsSL "${{ steps.pages.outputs.base_url }}/data/prices.json" -o data/prices.json || true
+      - name: Today's prices
+        run: |
+          pip install --quiet requests
+          python tools/prices.py data/prices.json
+        continue-on-error: true
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: .
+      - id: deployment
+        uses: actions/deploy-pages@v4
