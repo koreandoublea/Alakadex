@@ -1,7 +1,7 @@
 // Offline app shell. The page files are kept per build (the build writes APP and SHELL
 // below); card data and models are cached by the page itself (shim.js / store.mjs) and
 // only replaced when the user presses UPDATE, so this worker leaves them alone.
-const APP = "7128524e1c1f";
+const APP = "7ab19c0d35a2";
 const SHELL = ["alakadex.ico", "alakadex.svg", "app.js", "fonts/OFL.txt", "fonts/PressStart2P-Regular.ttf", "icon-192.png", "icon-512.png", "imgops.mjs", "index.html", "manifest.webmanifest", "ort/ort-wasm-simd-threaded.jsep.mjs", "ort/ort-wasm-simd-threaded.mjs", "ort/ort.wasm.min.mjs", "ort/ort.webgpu.min.mjs", "shim.js", "sounds/pokedex_click.ogg", "store.mjs", "style.css", "web.css", "worker.mjs"];
 const CACHE = "alakadex-shell-" + APP;
 

@@ -94,14 +94,14 @@ async function gpuCheck(det, lang) {
   if (!(d1 < 0.02 && d2 < 0.02 && l < 0.02)) throw new Error(`GPU results differ from the CPU's (${d1.toFixed(4)}, ${d2.toFixed(4)}, ${l.toFixed(4)})`);
 }
 
-// One run at a time per model: the live outline and a scan can overlap, and ONNX Runtime's
-// WebGPU backend refuses a second run of a session that's still busy ("Session already
-// started").
-const queues = new WeakMap();
+// One run at a time across ALL models: the live outline and a scan overlap, and ONNX Runtime's
+// WebGPU build (loaded whenever WebGPU exists, even for its CPU sessions) keeps a single
+// "running" slot for the whole module, so a second run of ANY session while one is busy fails
+// with "Session already started" - a scan's identifier read during a live outline check never logged.
+let queue = Promise.resolve();
 function run(session, feeds) {
-  const prev = queues.get(session) || Promise.resolve();
-  const p = prev.then(() => session.run(feeds));
-  queues.set(session, p.catch(() => {}));
+  const p = queue.then(() => session.run(feeds));
+  queue = p.catch(() => {});
   return p;
 }
 
