@@ -496,7 +496,7 @@ function defaultBox() {
 function loadBox() {
   try {
     const b = JSON.parse(localStorage.getItem(CARD_AREA_KEY));
-    if (b && b.w > 0.05 && b.h > 0.05) {
+    if (b && b.w > 0.05 && b.h > 0.05 && !(matchMedia("(pointer: coarse)").matches && (b.free || b.h < 0.25))) {
       if (b.free) return { x: Math.max(0, Math.min(1 - b.w, b.x)), y: Math.max(0, Math.min(1 - b.h, b.y)), w: b.w, h: b.h, free: true };
       // boxes saved before the area was locked to card shape: same centre and height
       const h = Math.min(b.h, 1, 1 / cardAspect()), w = h * cardAspect();
@@ -536,14 +536,15 @@ function boxHandleAt(e) {
   const r = videoRect(), b = overlay.getBoundingClientRect(), bx = state.box;
   const mx = e.clientX - b.left, my = e.clientY - b.top;
   const L = r.x + bx.x * r.w, T = r.y + bx.y * r.h, R = L + bx.w * r.w, B = T + bx.h * r.h;
-  const near = (x, y) => Math.hypot(mx - x, my - y) < 16;
+  const near = (x, y) => Math.hypot(mx - x, my - y) < (e.pointerType === "touch" ? 34 : 16);
   if (near(L, T)) return "nw"; if (near(R, T)) return "ne"; if (near(R, B)) return "se"; if (near(L, B)) return "sw";
   if (mx > L && mx < R && my > T && my < B) return "move";
   return null;
 }
 overlay.addEventListener("pointerdown", (e) => {
   if (!useBox() || !state.stream) return;
-  const h = boxHandleAt(e) || "draw";
+  const h = boxHandleAt(e) || (e.pointerType === "touch" ? null : "draw");
+  if (!h) return;
   const r = videoRect();
   boxDrag = { h, x: e.clientX, y: e.clientY, start: { ...state.box }, r };
   if (h === "draw") {
@@ -593,12 +594,19 @@ overlay.addEventListener("pointermove", (e) => {
   state.box = { x, y, w, h, ...(s.free ? { free: true } : {}) };
   state.quad = null; state.history = [];
 });
-overlay.addEventListener("pointerup", () => {
+function endBoxDrag(cancelled) {
   if (!boxDrag) return;
-  // a drawn area too small to be deliberate (a stray click) is thrown away
-  if (boxDrag.h === "draw" && (state.box.w < 0.05 || state.box.h < 0.05)) state.box = boxDrag.start;
+  // a drawn area too small to be deliberate (a stray click), or cut short, is thrown away
+  if (boxDrag.h === "draw" && (cancelled || state.box.w < 0.05 || state.box.h < 0.05)) state.box = boxDrag.start;
   boxDrag = null; saveBox();
-});
+}
+overlay.addEventListener("pointerup", () => endBoxDrag(false));
+overlay.addEventListener("pointercancel", () => endBoxDrag(true));
+// a finger on the box or a corner drags it; anywhere else the page still scrolls
+overlay.addEventListener("touchstart", (e) => {
+  const t = e.touches[0];
+  if (t && useBox() && state.stream && state.box && boxHandleAt({ clientX: t.clientX, clientY: t.clientY, pointerType: "touch" })) e.preventDefault();
+}, { passive: false });
 
 function isStable() {
   const now = performance.now();
@@ -2606,7 +2614,21 @@ document.addEventListener("keydown", (e) => {
 renderPulls();
 showSessionCost();
 updateDex();
-Promise.all([migrateOldPulls().then(loadCollection), refreshStatus()]).then(refreshPricesOnOpen).catch(() => {});
+const RESUME_HOURS = 6;
+async function resumeSession() {
+  const list = await api("/api/sessions").catch(() => null);
+  const last = Array.isArray(list) && list[0];
+  if (!last || state.pulls.length) return;
+  const at = new Date(last.ended || last.started || 0).getTime();
+  if (!(Date.now() - at < RESUME_HOURS * 3600e3)) return;
+  const s = await api(`/api/sessions/${last.id}`).catch(() => null);
+  if (!s || !s.id || state.pulls.length) return;
+  Object.assign(session, { id: s.id, started: s.started || session.started, cost: s.cost ?? null, cost_label: s.cost_label || "",
+                           cost_mode: s.cost_mode === "set" ? "set" : "total", set_costs: s.set_costs || {} });
+  state.pulls = s.pulls || [];
+  renderPulls(); showSessionCost();
+}
+Promise.all([migrateOldPulls().then(resumeSession).then(loadCollection), refreshStatus()]).then(refreshPricesOnOpen).catch(() => {});
 loadSets();
 setInterval(() => refreshStatus(), 60000);
 requestAnimationFrame(drawOverlay);
